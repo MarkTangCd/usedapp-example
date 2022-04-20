@@ -1,10 +1,36 @@
-import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App'
 import './index.css'
+import {
+  Mainnet,
+  DAppProvider,
+  useEtherBalance,
+  useEthers,
+  Config,
+} from '@usedapp/core'
+import { formatEther } from '@ethersproject/units'
+import { getDefaultProvider } from 'ethers'
+
+const config: Config = {
+  readOnlyChainId: Mainnet.chainId,
+  readOnlyUrls: {
+    [Mainnet.chainId]: getDefaultProvider('mainnet'),
+  }
+}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
+  <DAppProvider config={config}>
     <App />
-  </React.StrictMode>
+  </DAppProvider>,
 )
+
+function App() {
+  const { activateBrowserWallet, account } = useEthers()
+  const etherBalance = useEtherBalance(account)
+  return (
+    <div>
+      {!account && <button onClick={() => activateBrowserWallet()}>Connect</button>}
+      {account && <p>Account: {account}</p>}
+      {etherBalance && <p>Balance: {formatEther(etherBalance)}</p>}
+    </div>
+  )
+}
